@@ -1,0 +1,7 @@
+F:\projects\VisualStudio\C#\Graph-Fun\Graph-Fun\bin\Debug\Graph-Fun.exe
+F:\projects\VisualStudio\C#\Graph-Fun\Graph-Fun\bin\Debug\Graph-Fun.pdb
+F:\projects\VisualStudio\C#\Graph-Fun\Graph-Fun\bin\Debug\Newtonsoft.Json.dll
+F:\projects\VisualStudio\C#\Graph-Fun\Graph-Fun\bin\Debug\Newtonsoft.Json.xml
+F:\projects\VisualStudio\C#\Graph-Fun\Graph-Fun\obj\Debug\Graph-Fun.csprojResolveAssemblyReference.cache
+F:\projects\VisualStudio\C#\Graph-Fun\Graph-Fun\obj\Debug\Graph-Fun.exe
+F:\projects\VisualStudio\C#\Graph-Fun\Graph-Fun\obj\Debug\Graph-Fun.pdb

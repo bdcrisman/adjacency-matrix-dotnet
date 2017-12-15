@@ -10,11 +10,14 @@ namespace Graph_Fun
     {
         const string MatrixPath = "BIN/matrix.json";
 
-        public int Count { get { return _adjacencyMatrix.Count; } }
+        public int Count { get { return _adjacencyMatrix != null ? _adjacencyMatrix.Count : 0; } }
 
         private List<Node> _adjacencyMatrix;
 
-        public Graph()
+        /// <summary>
+        /// Creates a new graph that loads from a file.
+        /// </summary>
+        public Graph(bool loadFromFile)
         {
             var valueLists = RetrieveMatrixFromFile(MatrixPath);
 
@@ -24,10 +27,51 @@ namespace Graph_Fun
             _adjacencyMatrix = new List<Node>();
 
             valueLists.ForEach(
-                x => _adjacencyMatrix.Add(new Node(x)));
+                x => _adjacencyMatrix.Add(new Node() { IsVisited = false, Values = x }));
         }
 
-        public List<int> BFS(int startIndex = 0)
+        /// <summary>
+        /// Determines the shortest path in a BF search.
+        /// </summary>
+        /// <param name="target">Target value.</param>
+        /// <returns>Shortest path list of integers.</returns>
+        public List<int> ShortestPathBFS(int target)
+        {
+            var l = new List<int>();
+            for (var i = 0; i < _adjacencyMatrix.Count; ++i)
+            {
+                var path = BFS(i, target);
+
+                if (path.Count > 0 && (l.Count == 0 || path.Count < l.Count))
+                    l = path;
+            }
+            return l;
+        }
+
+        /// <summary>
+        /// Determines the shortest path in a DF search.
+        /// </summary>
+        /// <param name="target">Target value.</param>
+        /// <returns>Shortest path list of integers.</returns>
+        public List<int> ShortestPathDFS(int target)
+        {
+            var l = new List<int>();
+            for (var i = 0; i < _adjacencyMatrix.Count; ++i)
+            {
+                var path = DFS(i, target);
+                if (path.Count > 0 && (l.Count == 0 || path.Count < l.Count))
+                    l = path;
+            }
+            return l;
+        }
+
+        /// <summary>
+        /// Breadth first search.
+        /// </summary>
+        /// <param name="startIndex">Starting vertex index.</param>
+        /// <param name="target">Target value.</param>
+        /// <returns>List of integers.</returns>
+        public List<int> BFS(int startIndex, int target)
         {
             var l = new List<int>();
 
@@ -41,12 +85,18 @@ namespace Graph_Fun
             queue.Enqueue(startIndex);
             _adjacencyMatrix[startIndex].IsVisited = true;
 
-            BFS(queue, l);
+            BFS(queue, l, target);
 
             return l;
         }
 
-        public List<int> DFS(int startIndex = 0)
+        /// <summary>
+        /// Depth first search.
+        /// </summary>
+        /// <param name="startIndex">Starting vertext index.</param>
+        /// <param name="target">Target value.</param>
+        /// <returns>List of integers.</returns>
+        public List<int> DFS(int startIndex, int target)
         {
             var l = new List<int>();
 
@@ -56,47 +106,80 @@ namespace Graph_Fun
             ResetNodesVisitation();
             startIndex = startIndex < 0 ? 0 : startIndex >= _adjacencyMatrix.Count ? _adjacencyMatrix.Count - 1 : startIndex;
 
-            l.Add(startIndex);
-            _adjacencyMatrix[startIndex].IsVisited = true;
-            
-            DFS(startIndex, 0, l);
+            //l.Add(startIndex);
+            //_adjacencyMatrix[startIndex].IsVisited = true;
+            //DFS(startIndex, 0, l);
 
+            DFS(startIndex, l, target);
             return l;
         }
 
-        public void ShortestPathTo(int dest)
+        /// <summary>
+        /// Depth first search helper.
+        /// </summary>
+        /// <param name="v">Vertex index.</param>
+        /// <param name="l">List containing path.</param>
+        /// <param name="target">Target value.</param>
+        private void DFS(int v, List<int> l, int target)
         {
-            
-        }
-
-        private void DFS(int v, int i, List<int> l)
-        {
-            if (Math.Max(v, i) >= _adjacencyMatrix.Count)
+            if (v == target)
                 return;
 
-            if (!_adjacencyMatrix[i].IsVisited)
+            l.Add(v);
+            _adjacencyMatrix[v].IsVisited = true;
+
+            for (var i = 0; i < _adjacencyMatrix[v].Values.Count; ++i)
             {
-                l.Add(i);
-                _adjacencyMatrix[i].IsVisited = true;
-                DFS(i, 0, l);
+                var val = _adjacencyMatrix[v].Values[i];
+                if (!_adjacencyMatrix[val].IsVisited)
+                    DFS(val, l, target);
             }
-            else
-                DFS(v, i + 1, l);
         }
 
-        private void BFS(Queue<int> q, List<int> l)
+        //private void DFS(int v, int i, List<int> l)
+        //{
+        //    if (Math.Max(v, i) >= _adjacencyMatrix.Count)
+        //        return;
+
+        //    if (!_adjacencyMatrix[i].IsVisited)
+        //    {
+        //        l.Add(i);
+        //        _adjacencyMatrix[i].IsVisited = true;
+        //        DFS(i, 0, l);
+        //    }
+        //    else
+        //        DFS(v, i + 1, l);
+        //}
+
+        /// <summary>
+        /// Breadth first search helper.
+        /// </summary>
+        /// <param name="q">Queue to hold order.</param>
+        /// <param name="l">List containing total path.</param>
+        /// <param name="target">Target value.</param>
+        private void BFS(Queue<int> q, List<int> l, int target)
         {
             if (q.Count <= 0)
                 return;
 
             var front = q.Dequeue();
+
+            if (front == target)
+                return;
+
             l.Add(front);
 
-            LoadAdjacencies(q, front, 0);
-            BFS(q, l);
+            LoadVertexEdgeValues(q, front, 0);
+            BFS(q, l, target);
         }
 
-        private void LoadAdjacencies(Queue<int> q, int adjIndex, int valIndex)
+        /// <summary>
+        /// Load the vertex adjacencies.
+        /// </summary>
+        /// <param name="q">Queue to hold order.</param>
+        /// <param name="adjIndex">Current adjaceny matrix index.</param>
+        /// <param name="valIndex">Current node value index.</param>
+        private void LoadVertexEdgeValues(Queue<int> q, int adjIndex, int valIndex)
         {
             if (valIndex >= _adjacencyMatrix[adjIndex].Values.Count)
                 return;
@@ -104,66 +187,27 @@ namespace Graph_Fun
             var v = _adjacencyMatrix[adjIndex].Values[valIndex];
 
             if (!_adjacencyMatrix[v].IsVisited)
-            { 
+            {
                 _adjacencyMatrix[v].IsVisited = true;
                 q.Enqueue(v);
             }
 
-            LoadAdjacencies(q, adjIndex, valIndex + 1);
+            LoadVertexEdgeValues(q, adjIndex, valIndex + 1);
         }
 
-        //private void DFS_Display(Stack<int> s)
-        //{
-        //    if (s.Count <= 0)
-        //        return;
-
-        //    var top = s.Pop();
-        //    Console.WriteLine(top);
-
-        //    for (var i = 0; i < _adjacencyMatrix[top].Values.Count; ++i)
-        //    {
-        //        if (!_adjacencyMatrix[top].IsVisited)
-        //        {
-        //            _adjacencyMatrix[top].IsVisited = true;
-        //            s.Push(_adjacencyMatrix[top].Values[i]);
-        //        }
-        //        else
-        //        {
-        //            s.Pop();
-        //        }
-
-        //        DFS_Display(s);
-        //    }
-
-        //    //LoadDepth(s, top, 0);
-        //    //DFS_Display(s);
-        //}
-
-        //private void LoadDepth(Stack<int> s, int adjIndex, int valIndex)
-        //{
-        //    if (valIndex >= _adjacencyMatrix[adjIndex].Values.Count)
-        //        return;
-
-        //    var v = _adjacencyMatrix[adjIndex].Values[valIndex];
-
-        //    if (_adjacencyMatrix[v].IsVisited)
-        //    {
-        //        _adjacencyMatrix[v].IsVisited = true;
-        //        s.Push(v);
-        //    }
-        //    else if (s.Count > 0)
-        //    {
-        //        s.Pop();
-        //    }
-            
-        //    LoadDepth(s, v, 0);
-        //}
-
+        /// <summary>
+        /// Resets the graph's visitation flags.
+        /// </summary>
         private void ResetNodesVisitation()
         {
             _adjacencyMatrix.ForEach(x => x.IsVisited = false);
         }
 
+        /// <summary>
+        /// Retrieves the adjacency matrix from file.
+        /// </summary>
+        /// <param name="path">Path to matrix.</param>
+        /// <returns>List of lists of integers.</returns>
         private List<List<int>> RetrieveMatrixFromFile(string path)
         {
             if (!System.IO.File.Exists(path))
@@ -173,6 +217,9 @@ namespace Graph_Fun
         }
 
         #region Testing
+        /// <summary>
+        /// Displays the complete matrix.
+        /// </summary>
         public void DisplayMatrix()
         {
             var index = 0;

@@ -9,27 +9,26 @@ namespace Graph_Fun
     {
         static void Main(string[] args)
         {
-            var graph = new Graph();
-            var startBFS = 3;
-            var startDFS = 2;
-
-            Console.WriteLine("### BFS ###");
-            Console.WriteLine(String.Format("Start: {0}", startBFS));
-            for (var i = 0; i < graph.Count; ++i)
-            {
-                graph.BFS(i).ForEach(x => Console.Write(x));
-                Console.WriteLine();
-            }
+            var graph = new Graph(loadFromFile: true);
+            
+            graph.DisplayMatrix();
             Console.WriteLine();
 
-            Console.WriteLine("### DFS ###");
-            Console.WriteLine(String.Format("Start: {0}", startDFS));
-            for (var i = 0; i < graph.Count; ++i)
+            for (var target = 0; target < graph.Count; ++target)
             {
-                graph.DFS(i).ForEach(x => Console.Write(x));
+                Console.WriteLine(String.Format("Target: {0}", target));
+
+                Console.WriteLine(String.Format("### BFS Shortest Path to {0} ###", target));
+                graph.ShortestPathBFS(target)
+                    .ForEach(x => Console.Write(x));
+                Console.WriteLine();
+
+                Console.WriteLine(String.Format("### DFS Shortest Path to {0} ###", target));
+                graph.ShortestPathDFS(target)
+                    .ForEach(x => Console.Write(x));
+                Console.WriteLine();
                 Console.WriteLine();
             }
-            Console.WriteLine();
         }
     }
 }
